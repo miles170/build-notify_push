@@ -1,0 +1,50 @@
+* Client Push
+
+#+begin_html
+<p align="left">
+  <a href="https://github.com/miles170/build-notify_push/actions/workflows/build.yml">
+    <img src="https://github.com/miles170/build-notify_push/actions/workflows/build.yml/badge.svg" alt="CI Status Badge" />
+  </a>
+  <a href="https://hub.docker.com/r/miles170/notify_push">
+    <img src="https://img.shields.io/docker/v/miles170/notify_push" alt="Docker Image Version" />
+  </a>
+</p>
+#+end_html
+
+Update notifications for nextcloud clients
+
+*This GitHub repo automatically builds the latest release image from [[https://github.com/nextcloud/notify_push][notify_push]]*
+
+** About
+
+This app attempts to solve the issue where Nextcloud clients have to periodically check the server if any files have been changed. In order to keep sync snappy, clients wants to check for updates often, which increases the load on the server.
+
+With many clients all checking for updates a large portion of the server load can consist of just these update checks.
+
+By providing a way for the server to send update notifications to the clients, the need for the clients to make these checks can be greatly reduced.
+
+Update notifications are provided on a "best effort" basis, updates might happen without a notification being send and a notification can be send even if no update has actually happened. Clients are advised to still perform periodic checks for updates on their own, although these can be run on a much lower frequency.
+
+** Requirements
+
+This app requires a redis server to be setup and for nextcloud to be configured to use the redis server.
+
+** Usage
+
+*** docker-compose
+#+begin_src yaml
+---
+version: "2.1"
+services:
+  nextcloud:
+    image: docker.io/miles170/notify_push:latest
+    container_name: notify_push
+    command: /notify_push /config.php
+    environment:
+      - NEXTCLOUD_URL=http://nextcloud
+    volumes:
+      - /nextcloud/config/config.php:/config.php:ro
+    healthcheck:
+      test: ["CMD", "/notify_push", "--dump-config", "/config.php"]
+    restart: unless-stopped
+#+end_src
