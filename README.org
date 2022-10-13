@@ -8,6 +8,9 @@
   <a href="https://hub.docker.com/r/miles170/notify_push">
     <img src="https://img.shields.io/docker/v/miles170/notify_push" alt="Docker Image Version" />
   </a>
+  <a href="https://hub.docker.com/r/miles170/notify_push">
+    <img src="https://img.shields.io/docker/pulls/miles170/notify_push" alt="Docker Pulls">
+  </a>
 </p>
 #+end_html
 
