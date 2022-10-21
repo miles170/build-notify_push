@@ -21,8 +21,8 @@ jobs:
         id: latest-release
         run: |
           tag=$(git describe --abbrev=0 --tags)
-          echo "::set-output name=tag::${tag}"
-          echo "::set-output name=hash::$(git rev-parse HEAD)"
+          echo "tag=${tag}" >> $GITHUB_OUTPUT
+          echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           git checkout $tag
 
       - name: Check Docker image exists
@@ -31,7 +31,7 @@ jobs:
           image=${{ secrets.DOCKERHUB_USERNAME }}/notify_push:latest
           docker pull $image
           hash=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $image)
-          [[ $hash != '${{ steps.latest-release.outputs.hash }}' ]] && echo '::set-output name=build::true' || exit 0
+          [[ $hash != '${{ steps.latest-release.outputs.hash }}' ]] && echo 'build=true' >> $GITHUB_OUTPUT || exit 0
 
       - name: Docker meta
         if: ${{ steps.inspect.outputs.build == 'true' }}
