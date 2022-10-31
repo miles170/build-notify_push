@@ -22,8 +22,8 @@ jobs:
         run: |
           tag=$(git describe --abbrev=0 --tags)
           echo "tag=${tag}" >> $GITHUB_OUTPUT
-          echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           git checkout $tag
+          echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: Check Docker image exists
         id: inspect
