@@ -40,9 +40,9 @@ jobs:
           hash=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $image)
           [[ $hash != '${{ steps.git-info.outputs.hash }}' ]] && echo 'build=true' >> $GITHUB_OUTPUT || exit 0
 
-      - name: Docker meta
+      - name: Docker metadata
         if: ${{ steps.inspect.outputs.build == 'true' }}
-        id: meta
+        id: metadata
         uses: docker/metadata-action@v4
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/notify_push
@@ -71,6 +71,6 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/notify_push:latest, ${{ secrets.DOCKERHUB_USERNAME }}/notify_push:${{ steps.git-info.outputs.tag }}
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: ${{ steps.metadata.outputs.labels }}
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/notify_push:latest
           cache-to: type=inline
