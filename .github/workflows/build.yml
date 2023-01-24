@@ -5,6 +5,10 @@ on:
     # Every day at 5am
     - cron: "0 5 * * *"
   workflow_dispatch:
+    inputs:
+      git_tag:
+        description: Git Tag To Release From. Last Git Tag Is Used If Omitted
+        required: false
 
 jobs:
   build:
@@ -20,7 +24,10 @@ jobs:
       - name: Get latest release
         id: latest-release
         run: |
-          tag=$(git describe --tags $(git rev-list --tags --max-count=1))
+          tag='${{ github.event.inputs.git_tag }}'
+          if [[ -z "${tag}" ]]; then
+            tag=$(git describe --tags $(git rev-list --tags --max-count=1))
+          fi
           echo "tag=${tag}" >> $GITHUB_OUTPUT
           git checkout $tag
           echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
