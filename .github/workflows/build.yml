@@ -21,8 +21,8 @@ jobs:
           repository: nextcloud/notify_push
           fetch-depth: 0
 
-      - name: Get latest release
-        id: latest-release
+      - name: Get git info
+        id: git-info
         run: |
           tag='${{ github.event.inputs.git_tag }}'
           if [[ -z "${tag}" ]]; then
@@ -38,7 +38,7 @@ jobs:
           image=${{ secrets.DOCKERHUB_USERNAME }}/notify_push:latest
           docker pull $image
           hash=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $image)
-          [[ $hash != '${{ steps.latest-release.outputs.hash }}' ]] && echo 'build=true' >> $GITHUB_OUTPUT || exit 0
+          [[ $hash != '${{ steps.git-info.outputs.hash }}' ]] && echo 'build=true' >> $GITHUB_OUTPUT || exit 0
 
       - name: Docker meta
         if: ${{ steps.inspect.outputs.build == 'true' }}
@@ -50,8 +50,8 @@ jobs:
             org.opencontainers.image.title=notify_push
             org.opencontainers.image.description=Update notifications for nextcloud clients
             org.opencontainers.image.source=https://github.com/nextcloud/notify_push
-            org.opencontainers.image.version=${{ steps.latest-release.outputs.tag }}
-            org.opencontainers.image.revision=${{ steps.latest-release.outputs.hash }}
+            org.opencontainers.image.version=${{ steps.git-info.outputs.tag }}
+            org.opencontainers.image.revision=${{ steps.git-info.outputs.hash }}
 
       - name: Set up Docker Buildx
         if: ${{ steps.inspect.outputs.build == 'true' }}
@@ -70,7 +70,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/notify_push:latest, ${{ secrets.DOCKERHUB_USERNAME }}/notify_push:${{ steps.latest-release.outputs.tag }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/notify_push:latest, ${{ secrets.DOCKERHUB_USERNAME }}/notify_push:${{ steps.git-info.outputs.tag }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/notify_push:latest
           cache-to: type=inline
