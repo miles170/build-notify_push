@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - registry: ""
+          - registry: docker.io
             image: docker.io/miles170/notify_push
             username: DOCKERHUB_USERNAME
             password: DOCKERHUB_TOKEN
@@ -70,6 +70,10 @@ jobs:
             org.opencontainers.image.version=${{ steps.git-info.outputs.tag }}
             org.opencontainers.image.revision=${{ steps.git-info.outputs.hash }}
 
+      - name: Set up QEMU
+        if: ${{ github.event.inputs.force }} || ${{ steps.inspect.outputs.build == 'true' }}
+        uses: docker/setup-qemu-action@v2
+
       - name: Set up Docker Buildx
         if: ${{ github.event.inputs.force }} || ${{ steps.inspect.outputs.build == 'true' }}
         uses: docker/setup-buildx-action@v2
@@ -87,6 +91,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: ${{ matrix.image }}:latest, ${{ matrix.image }}:${{ steps.git-info.outputs.tag }}
           labels: ${{ steps.metadata.outputs.labels }}
