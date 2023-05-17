@@ -2,8 +2,8 @@ name: Build Docker Image
 
 on:
   schedule:
-    # Every day at 5am
-    - cron: "0 5 * * *"
+    # Every 1 hour
+    - cron: "0 * * * *"
   workflow_dispatch:
     inputs:
       git_tag:
