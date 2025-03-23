@@ -92,6 +92,16 @@ jobs:
           username: ${{ secrets[matrix.username] }}
           password: ${{ secrets[matrix.password] }}
 
+      - name: Prepare Dockerfile
+        if: ${{ steps.inspect.outputs.build == 'true' }}
+        run: |
+          # Modify Dockerfile to include test_client
+          sed -i "/RUN cargo build --release/c\RUN cargo build --release \&\& cargo build --release --bin test_client" Dockerfile
+          sed -i "/mv \/volume\/target\/\*-unknown-\*-musl\/release\/notify_push/c\RUN mv \/volume\/target\/\*-unknown-\*-musl\/release\/notify_push \/notify_push \&\& \\\\\n    mv \/volume\/target\/\*-unknown-\*-musl\/release\/test_client \/test_client" Dockerfile
+          sed -i "/COPY --from=build \/notify_push/c\COPY --from=build \/notify_push \/\nCOPY --from=build \/test_client \/" Dockerfile
+          # Remove the line that deletes test_client from Cargo.toml
+          sed -i "/sed -i '\/test_client\/d' Cargo.toml/d" Dockerfile
+
       - name: Build and push
         if: ${{ steps.inspect.outputs.build == 'true' }}
         uses: docker/build-push-action@v6
