@@ -70,7 +70,7 @@ jobs:
       - name: Docker metadata
         if: ${{ steps.inspect.outputs.build == 'true' }}
         id: metadata
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ matrix.image }}
           labels: |
