@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       git_tag:
-        description: Git Tag To Release From. Last Git Tag Is Used If Omitted
+        description: Git Tag To Release From. Latest GitHub Release Is Used If Omitted
         required: false
       force:
         type: boolean
@@ -42,7 +42,9 @@ jobs:
         run: |
           tag='${{ github.event.inputs.git_tag }}'
           if [[ -z "${tag}" ]]; then
-            tag=$(git describe --tags $(git rev-list --tags --max-count=1))
+            tag=$(curl --fail --silent --show-error \
+              --header "Authorization: Bearer ${{ github.token }}" \
+              https://api.github.com/repos/nextcloud/notify_push/releases/latest | jq -er '.tag_name')
           fi
           echo "tag=${tag}" >> $GITHUB_OUTPUT
           git checkout $tag
@@ -62,8 +64,9 @@ jobs:
             exit 0
           fi
           hash=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $image)
-          if [[ "${hash}" != '${{ steps.git-info.outputs.hash }}' ]]; then
-            echo "${hash} != ${{ steps.git-info.outputs.hash }}"
+          version=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.version" }}' $image)
+          if [[ "${hash}" != '${{ steps.git-info.outputs.hash }}' || "${version}" != '${{ steps.git-info.outputs.tag }}' ]]; then
+            echo "${hash}/${version} != ${{ steps.git-info.outputs.hash }}/${{ steps.git-info.outputs.tag }}"
             echo 'build=true' >> $GITHUB_OUTPUT
           fi
 
